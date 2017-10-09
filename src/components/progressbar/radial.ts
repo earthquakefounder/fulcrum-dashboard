@@ -7,9 +7,10 @@ import {
 import { Observable } from 'rxjs/Observable';
 
 import 'rxjs/add/observable/timer';
+import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/share';
 
-const animationDuration = 100;
+const animationDuration = 1;
 const backgroundColor = "#d6dadc";
 const circleColor = "#97a71d";
 const indent = 10;
@@ -73,6 +74,7 @@ interface ProgressWheel {
 			transition: -ms-transform ${animationDuration}s;
 			transition: transform ${animationDuration}s;
             -webkit-backface-visibility: hidden;
+            transition-timing-function: linear;
             
             transform: rotate(0deg);
         }
@@ -83,34 +85,41 @@ interface ProgressWheel {
 
         .fill {
             clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%);
+        }
+
+        .circle:nth-child(odd) .fill {
+            
             background-color: ${circleColor};
+        }
+
+        .circle:nth-child(even) .fill {
+            background-color: #2980b9;
         }
     `],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RadialProgressBar {
+    private _progress: number;
+    get progress() { return this._progress; }
     @Input()
-    progress: number;
+    set progress(value: number) {
+        this._progress = value;
 
-    private get wheels(): ProgressWheel[] {
-        return new Array(Math.ceil(this.progress / 100))
-            .fill(0)
-            .map((value, index, array) => {
-                const rotation = index < (array.length - 1) ? 180 : (1.8 * this.progress % 100);
-                return {
-                    rotation: Observable.timer(1).map(() => {
-                        return `rotate(${rotation}deg)`
-                    }),
-                    fixRotation: Observable.timer(1).map(() => `rotate(${rotation * 2}deg)`),
-                    animationDuration: `${animationDuration}s`,
-                    animationDelay: `${index * animationDuration}s`
-                };
-            });
+        this._wheels = new Array(Math.ceil(this.progress / 100))
+        .fill(0)
+        .map((value, index, array) => {
+            const rotation = index < (array.length - 1) ? 180 : (1.8 * this.progress % 100);
+            return {
+                rotation: Observable.timer(1).map(() => `rotate(${rotation}deg)`).share(),
+                fixRotation: Observable.timer(1).map(() => `rotate(${rotation * 2}deg)`).share(),
+                animationDuration: `${animationDuration}s`,
+                animationDelay: `${index * animationDuration}s`
+            };
+        });
     }
 
-    private rotation(scale?: number) {
-        scale = scale || 1;
-
-        return `rotate(${1.8 * (this.progress || 0) * scale}deg)`;
+    private _wheels: ProgressWheel[] = [];
+    private get wheels(): ProgressWheel[] {
+        return this._wheels;
     }
 }

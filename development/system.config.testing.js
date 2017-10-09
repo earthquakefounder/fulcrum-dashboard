@@ -38,6 +38,9 @@ System.config({
         'typescript': 'npm:typescript',
         'angular-in-memory-web-api': 'npm:angular-in-memory-web-api/bundles/in-memory-web-api.umd.js'
     },
+    meta: {
+        'rxjs/*': { esModule: true }
+    },
     packages: {
         ts: {
             main: 'lib/plugin.js'

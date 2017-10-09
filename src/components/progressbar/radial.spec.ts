@@ -20,11 +20,13 @@ describe('Radial progress bar', () => {
         component = fixture.componentInstance;
     });
 
-    it('should contain a single wheel with the correct rotation', () => {
+    it('should contain a single wheel with the correct rotation', async(() => {
         component.progress = 25; /* Progress at 25% */
         fixture.detectChanges();
 
-        expect(fixture.debugElement.query(By.css('.fill')).nativeElement.style.transform).toBe(`rotate(${360 * component.progress / 100 * .5}deg)`);
-        expect(fixture.debugElement.queryAll(By.css('.circle')).length).toBe(1);
-    });
+        setTimeout(() => {
+            expect(fixture.debugElement.query(By.css('.fill')).nativeElement.style.transform).toBe(`rotate(${360 * component.progress / 100 * .5}deg)`);
+            expect(fixture.debugElement.queryAll(By.css('.circle')).length).toBe(1);
+        }, 10);
+    }));
 })
