@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+      "noEmit": true,
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "target": "es5",
+      "module": "system",
+      "moduleResolution": "node",
+      "removeComments": true,
+      "sourceMap": true,
+      "lib": [ "es6", "dom" ],
+      "typeRoots": [
+        "../node_modules/@types"
+      ]
+    },
+    "include": [
+      "./**/*.ts",
+      "../node_modules/@types/**/*.d.ts"
+    ],
+    "exclude": [
+      "./**/*.spec.ts"
+    ]
+  }
+  
