@@ -8,6 +8,7 @@ import { Observable } from 'rxjs/Observable';
 
 import 'rxjs/add/observable/timer';
 import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/takeWhile';
 import 'rxjs/add/operator/share';
 
 const animationDuration = 1;
@@ -15,23 +16,25 @@ const backgroundColor = "#d6dadc";
 const circleColor = "#97a71d";
 const indent = 10;
 
-interface ProgressWheel {
-    rotation: Observable<string>,
-    fixRotation:  Observable<string>,
-    animationDuration: string;
-    animationDelay: string
+interface RadialData {
+    counter: Observable<number>,
+    wheels: {
+        rotation: Observable<string>,
+        fixRotation:  Observable<string>
+    }[]
 };
 
 @Component({
     selector: 'progress-bar[type=radial]',
     template: `
-    <div class="circle" *ngFor="let wheel of wheels">
-        <div class="mask full" [style.transform]="wheel.rotation | async"  [style.transitionDelay]="wheel.animationDelay">
-            <div class="fill" [style.transform]="wheel.rotation | async"  [style.transitionDelay]="wheel.animationDelay"></div>
+    <div class="counter">{{data.counter | async}}</div>
+    <div class="circle" *ngFor="let wheel of data.wheels">
+        <div class="mask full" [style.transform]="wheel.rotation | async">
+            <div class="fill" [style.transform]="wheel.rotation | async"></div>
         </div>
-        <div class="mask half"  [style.transitionDelay]="wheel.animationDelay"> 
-            <div class="fill" [style.transform]="wheel.rotation | async"  [style.transitionDelay]="wheel.animationDelay"></div>
-            <div class="fill fix" [style.transform]="wheel.fixRotation | async"  [style.transitionDelay]="wheel.animationDelay"></div>
+        <div class="mask half"> 
+            <div class="fill" [style.transform]="wheel.rotation | async"></div>
+            <div class="fill fix" [style.transform]="wheel.fixRotation | async"></div>
         </div>
     </div>
     `,
@@ -57,7 +60,7 @@ interface ProgressWheel {
             background-color: ${backgroundColor};
         }
 
-        .circle {
+        .circle, .counter {
             position: absolute;
         }
 
@@ -99,27 +102,32 @@ interface ProgressWheel {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RadialProgressBar {
+    constructor() {
+        this.progress = 0;
+    }
+
     private _progress: number;
     get progress() { return this._progress; }
     @Input()
     set progress(value: number) {
         this._progress = value;
 
-        this._wheels = new Array(Math.ceil(this.progress / 100))
-        .fill(0)
-        .map((value, index, array) => {
-            const rotation = index < (array.length - 1) ? 180 : (1.8 * this.progress % 100);
-            return {
-                rotation: Observable.timer(1).map(() => `rotate(${rotation}deg)`).share(),
-                fixRotation: Observable.timer(1).map(() => `rotate(${rotation * 2}deg)`).share(),
-                animationDuration: `${animationDuration}s`,
-                animationDelay: `${index * animationDuration}s`
-            };
-        });
+        const iterations = Math.ceil(value / 100);
+        this.data = {
+            counter: Observable.timer(1, iterations * 1000 / value).map(x => x + 1).takeWhile(current => current < value),
+            wheels: new Array(iterations)
+                .fill(0)
+                .map((value, index, array) => {
+                    const rotation = index < (array.length - 1) ? 180 : (1.8 * (this.progress % 100));
+                    const emitTimer =  1 + ((animationDuration * 1000) + 1) * index;
+                    
+                    return {
+                        rotation: Observable.timer(emitTimer).map(() => `rotate(${rotation}deg)`).share(),
+                        fixRotation: Observable.timer(emitTimer).map(() => `rotate(${rotation * 2}deg)`).share()
+                    };
+                })
+        };
     }
 
-    private _wheels: ProgressWheel[] = [];
-    private get wheels(): ProgressWheel[] {
-        return this._wheels;
-    }
+    private data: RadialData;
 }

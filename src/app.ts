@@ -10,7 +10,7 @@ import 'rxjs/add/operator/do';
 @Component({
     selector: 'fulcrum',
     template: `
-        <progress-bar type="radial" [progress]="145"></progress-bar>
+        <progress-bar type="radial" [progress]="275"></progress-bar>
         <div *ngIf="loading">Loading Time Tracking data....</div>
         <div *ngIf="data | async as context">
             <div *ngFor="let project of context.projects">
