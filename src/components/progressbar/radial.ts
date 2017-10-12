@@ -7,6 +7,7 @@ import {
 import { Observable } from 'rxjs/Observable';
 
 import 'rxjs/add/observable/timer';
+import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/takeWhile';
 import 'rxjs/add/operator/share';
@@ -60,6 +61,18 @@ interface RadialData {
             background-color: ${backgroundColor};
         }
 
+        .counter {
+            font-size: 24px;
+            font-family: Verdana;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            z-index: 1000;
+        }
+
+        .counter:after {
+            content: "%"
+        }
         .circle, .counter {
             position: absolute;
         }
@@ -114,7 +127,7 @@ export class RadialProgressBar {
 
         const iterations = Math.ceil(value / 100);
         this.data = {
-            counter: Observable.timer(1, iterations * 1000 / value).map(x => x + 1).takeWhile(current => current < value),
+            counter: !iterations ? Observable.of(0) : Observable.timer(0, iterations * 1000 / value).map(x => x + 1).takeWhile(current => current <= value),
             wheels: new Array(iterations)
                 .fill(0)
                 .map((value, index, array) => {
