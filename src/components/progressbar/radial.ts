@@ -14,8 +14,8 @@ import 'rxjs/add/operator/share';
 
 const animationDuration = 1;
 const backgroundColor = "#d6dadc";
-const circleColor = "#97a71d";
 const indent = 10;
+const width = Math.SQRT1_2 * 100;
 
 interface RadialData {
     counter: Observable<number>,
@@ -28,28 +28,38 @@ interface RadialData {
 @Component({
     selector: 'progress-bar[type=radial]',
     template: `
-    <div class="counter">{{data.counter | async}}</div>
-    <div class="circle" *ngFor="let wheel of data.wheels">
-        <div class="mask full" [style.transform]="wheel.rotation | async">
-            <div class="fill" [style.transform]="wheel.rotation | async"></div>
-        </div>
-        <div class="mask half"> 
-            <div class="fill" [style.transform]="wheel.rotation | async"></div>
-            <div class="fill fix" [style.transform]="wheel.fixRotation | async"></div>
+    <div class="progress-bar-radial">
+        <div class="counter">{{data.counter | async}}</div>
+        <div class="circle" *ngFor="let wheel of data.wheels">
+            <div class="mask full" [style.transform]="wheel.rotation | async">
+                <div class="fill" [style.transform]="wheel.rotation | async"></div>
+            </div>
+            <div class="mask half"> 
+                <div class="fill" [style.transform]="wheel.rotation | async"></div>
+                <div class="fill fix" [style.transform]="wheel.fixRotation | async"></div>
+            </div>
         </div>
     </div>
     `,
     styles: [`
-        :host { 
+        :host {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .progress-bar-radial { 
             display: block;
             background-color: ${backgroundColor};
             border-radius: 50%;
-            width: 100%;
-            height: 100%;
+            width: ${width}%;
+            height: ${width}%;
             position: relative;
+            
         }
 
-        :host:after {
+        .progress-bar-radial:after {
             content: "";
             display: block;
             position: absolute;
@@ -103,13 +113,20 @@ interface RadialData {
             clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%);
         }
 
-        .circle:nth-child(odd) .fill {
-            
-            background-color: ${circleColor};
+        .circle:nth-child(4n) .fill {
+            background-color: #97a71d;
         }
 
-        .circle:nth-child(even) .fill {
+        .circle:nth-child(4n + 1) .fill {
             background-color: #2980b9;
+        }
+
+        .circle:nth-child(4n + 2) .fill {
+            background-color: #8e44ad;
+        }
+
+        .circle:nth-child(4n + 3) .fill {
+            background-color: #d35400;
         }
     `],
     changeDetection: ChangeDetectionStrategy.OnPush
